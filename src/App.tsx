@@ -4,8 +4,31 @@ import LoginPage from "./pages/LoginPage";
 import PosPage from "./pages/PosPage";
 import AdminPanel from "./pages/AdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useEffect } from "react";
 
 function App() {
+
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) ||
+        e.key === "BrowserBack" ||
+        e.key === "BrowserForward"
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <>
       <Routes>
