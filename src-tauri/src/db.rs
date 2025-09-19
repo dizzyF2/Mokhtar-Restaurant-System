@@ -90,12 +90,3 @@ pub fn init_db(app: &tauri::AppHandle) -> Result<Connection> {
 
     Ok(conn)
 }
-
-pub fn establish_connection(app: &tauri::AppHandle) -> Result<Connection, rusqlite::Error> {
-    let path: PathBuf = app
-        .path()
-        .resolve("mokhtar.db", BaseDirectory::AppData)
-        .unwrap();
-
-    Connection::open(path)
-}
