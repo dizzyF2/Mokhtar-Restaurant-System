@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogOut, Package, Users, BarChart3, Settings } from "lucide-react";
+import { LogOut, Package, Users, BarChart3, Settings, Contact, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProductsPage from "../components/admin/ProductsPage";
@@ -8,18 +8,21 @@ import Reports from "../components/admin/Reports";
 import AdminSettings from "@/components/admin/AdminSettings";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
+import ClientsPage from "@/components/admin/ClientsPage";
+import CategoriesPage from "@/components/admin/CategoriesPage";
 
 export default function AdminPanel() {
     const [activePage, setActivePage] = useState<
-        "products" | "employees" | "reports" | "settings" | null
+        "products" | "categories" | "employees" | "reports" | "clients" | "settings"| null
     >(null);
     const [adminName, setAdminName] = useState<string>("admin");
     const navigate = useNavigate();
-
     const menuItems = [
-        { key: "products", label: "المنتجات", icon: Package },
+        { key: "products", label: "قائمة الطعام", icon: Utensils },
+        { key: "categories", label: "الفئات", icon: Package },
         { key: "employees", label: "الموظفين", icon: Users },
         { key: "reports", label: "التقارير", icon: BarChart3 },
+        { key: "clients", label: "العملاء", icon: Contact },
         { key: "settings", label: "الإعدادات", icon: Settings },
     ];
 
@@ -74,8 +77,8 @@ export default function AdminPanel() {
                                     isActive ? "bg-blue-600" : "hover:bg-gray-700"
                                 }`}
                             >
-                                <span>{item.label}</span>
                                 <Icon size={18} className="ml-2" />
+                                <span>{item.label}</span>
                             </Button>
                         );
                     })}
@@ -105,8 +108,10 @@ export default function AdminPanel() {
 
                 <ScrollArea className="flex-1 p-6 h-full">
                     {activePage === "products" && <ProductsPage />}
+                    {activePage === "categories" && <CategoriesPage />}
                     {activePage === "employees" && <EmployeesPage />}
                     {activePage === "reports" && <Reports />}
+                    {activePage === "clients" && <ClientsPage />}
                     {activePage === "settings" && <AdminSettings />}
                 </ScrollArea>
             </main>
