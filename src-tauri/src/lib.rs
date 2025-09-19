@@ -12,7 +12,8 @@ use models::products::{
 };
 use models::sale::{start_sale, add_sale_item, update_sale_total, get_all_sales, SaleReport};
 use models::report::{get_report, SalesReport};
-
+use models::clients::Client;
+use models::categories::{fetch_categories, add_category, update_category, delete_category, Category};
 
 
 // ---------------- ADMIN COMMANDS ----------------
@@ -214,7 +215,55 @@ fn get_report_cmd(
     get_report(&conn, start, end).map_err(|e| e.to_string())
 }
 
+// ---------------- CLIENT COMMANDS ----------------
+#[tauri::command]
+fn fetch_clients(app: tauri::AppHandle) -> Result<Vec<Client>, String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    Client::fetch_all_clients(&conn).map_err(|e| e.to_string())
+}
 
+#[tauri::command]
+fn add_new_client(app: tauri::AppHandle, name: String, phone: String, phone2: Option<String>, address: Option<String>) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    Client::add_client(&conn, &name, &phone, phone2.as_deref(), address.as_deref()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_client_cmd(app: tauri::AppHandle, id: i32, name: String, phone: String, phone2: Option<String>, address: Option<String>) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    Client::update_client(&conn, id, &name, &phone, phone2.as_deref(), address.as_deref()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_client_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    Client::delete_client(&conn, id).map_err(|e| e.to_string())
+}
+
+// ---------------- CATEGORY COMMANDS ----------------
+#[tauri::command]
+fn fetch_categories_cmd(app: tauri::AppHandle) -> Result<Vec<Category>, String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    fetch_categories(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn add_category_cmd(app: tauri::AppHandle, name: String) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    add_category(&conn, &name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_category_cmd(app: tauri::AppHandle, id: i32, name: String) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    update_category(&conn, id, &name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_category_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    delete_category(&conn, id).map_err(|e| e.to_string())
+}
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -247,6 +296,16 @@ pub fn run() {
             get_all_sales_cmd,
             // Reports
             get_report_cmd,
+            // client
+            fetch_clients,
+            add_new_client,
+            update_client_cmd,
+            delete_client_cmd,
+            // category
+            fetch_categories_cmd,
+            add_category_cmd,
+            update_category_cmd,
+            delete_category_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
