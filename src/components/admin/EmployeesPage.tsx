@@ -14,6 +14,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Trash2, Check, X, Edit3, PlusCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import ConfirmModal from "../ConfirmModal";
+import { ScrollArea } from "../ui/scroll-area";
 
 type Employee = { id: number; name: string; password: string };
 
@@ -138,7 +139,7 @@ export default function EmployeesPage() {
             </div>
 
             {/* جدول الموظفين */}
-            <div className="overflow-x-auto">
+            <ScrollArea className="h-80 w-full rounded-md border border-gray-200" dir="rtl">
                 <Table className="border border-gray-200 rounded-lg">
                 <TableHeader>
                     <TableRow className=" bg-gray-100 hover:bg-gray-100">
@@ -245,7 +246,7 @@ export default function EmployeesPage() {
                     )}
                 </TableBody>
                 </Table>
-            </div>
+            </ScrollArea>
             </CardContent>
         </Card>
         </div>

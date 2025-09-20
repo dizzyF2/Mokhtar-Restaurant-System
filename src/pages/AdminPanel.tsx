@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogOut, Package, Users, BarChart3, Settings, Contact, Utensils } from "lucide-react";
+import { LogOut, Package, Users, BarChart3, Settings, Contact, Utensils, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProductsPage from "../components/admin/ProductsPage";
@@ -10,22 +10,23 @@ import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import ClientsPage from "@/components/admin/ClientsPage";
 import CategoriesPage from "@/components/admin/CategoriesPage";
+import SizesPage from "@/components/admin/SizesPage";
 
 export default function AdminPanel() {
     const [activePage, setActivePage] = useState<
-        "products" | "categories" | "employees" | "reports" | "clients" | "settings"| null
+        "products" | "categories" | "Sizes" | "employees" | "clients" | "reports" |  "settings"| null
     >(null);
     const [adminName, setAdminName] = useState<string>("admin");
     const navigate = useNavigate();
     const menuItems = [
         { key: "products", label: "قائمة الطعام", icon: Utensils },
         { key: "categories", label: "الفئات", icon: Package },
+        { key: "Sizes", label: "الاحجام", icon: Layers },
         { key: "employees", label: "الموظفين", icon: Users },
-        { key: "reports", label: "التقارير", icon: BarChart3 },
         { key: "clients", label: "العملاء", icon: Contact },
+        { key: "reports", label: "التقارير", icon: BarChart3 },
         { key: "settings", label: "الإعدادات", icon: Settings },
     ];
-
     const fetchAdminName = async () => {
         try {
             const name = await invoke<string>("get_admin_name");
@@ -109,9 +110,10 @@ export default function AdminPanel() {
                 <ScrollArea className="flex-1 p-6 h-full">
                     {activePage === "products" && <ProductsPage />}
                     {activePage === "categories" && <CategoriesPage />}
+                    {activePage === "Sizes" && <SizesPage />}
                     {activePage === "employees" && <EmployeesPage />}
-                    {activePage === "reports" && <Reports />}
                     {activePage === "clients" && <ClientsPage />}
+                    {activePage === "reports" && <Reports />}
                     {activePage === "settings" && <AdminSettings />}
                 </ScrollArea>
             </main>
