@@ -1,24 +1,30 @@
 use rusqlite::{params, Connection, Result};
 use chrono::Utc;
+use crate::models::sizes::{fetch_product_sizes, ProductSize};
 
 #[derive(Debug, serde::Serialize)]
 pub struct Product {
     pub id: i32,
     pub category_id: i32,
     pub name: String,
-    pub description: Option<String>,
-    pub base_price: f64,
     pub barcode: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct ProductWithSizes {
+    pub id: i32,
+    pub category_id: i32,
+    pub name: String,
+    pub barcode: Option<String>,
+    pub sizes: Vec<ProductSize>,
 }
 
 pub fn add_product(
     conn: &Connection,
     category_id: i32,
     name: &str,
-    description: Option<&str>,
-    base_price: f64,
     barcode: Option<&str>,
-) -> Result<usize> {
+) -> Result<i64> {
     let barcode_val = if let Some(bc) = barcode {
         if !bc.trim().is_empty() {
             Some(bc.to_string())
@@ -30,10 +36,12 @@ pub fn add_product(
     };
 
     conn.execute(
-        "INSERT INTO products (category_id, name, description, base_price, barcode) 
-        VALUES (?1, ?2, ?3, ?4, ?5)",
-        params![category_id, name, description, base_price, barcode_val],
-    )
+        "INSERT INTO products (category_id, name, barcode) 
+        VALUES (?1, ?2, ?3)",
+        params![category_id, name, barcode_val],
+    )?;
+
+    Ok(conn.last_insert_rowid())
 }
 
 fn generate_barcode() -> String {
@@ -43,16 +51,14 @@ fn generate_barcode() -> String {
 
 pub fn get_products(conn: &Connection) -> Result<Vec<Product>> {
     let mut stmt = conn.prepare(
-        "SELECT id, category_id, name, description, base_price, barcode FROM products",
+        "SELECT id, category_id, name, barcode FROM products",
     )?;
     let rows = stmt.query_map([], |row| {
         Ok(Product {
             id: row.get(0)?,
             category_id: row.get(1)?,
             name: row.get(2)?,
-            description: row.get(3)?,
-            base_price: row.get(4)?,
-            barcode: row.get(5)?,
+            barcode: row.get(3)?,
         })
     })?;
 
@@ -68,18 +74,52 @@ pub fn update_product(
     id: i32,
     category_id: i32,
     name: &str,
-    description: Option<&str>,
-    base_price: f64,
     barcode: Option<&str>,
 ) -> Result<usize> {
     conn.execute(
         "UPDATE products 
-            SET category_id = ?1, name = ?2, description = ?3, base_price = ?4, barcode = ?5 
-            WHERE id = ?6",
-        params![category_id, name, description, base_price, barcode, id],
+            SET category_id = ?1, name = ?2, barcode = ?3 
+            WHERE id = ?4",
+        params![category_id, name, barcode, id],
     )
 }
 
 pub fn delete_product(conn: &Connection, id: i32) -> Result<usize> {
     conn.execute("DELETE FROM products WHERE id = ?1", params![id])
+}
+
+pub fn add_product_size(
+    conn: &Connection,
+    product_id: i64,
+    size_id: i32,
+    price: f64,
+) -> Result<usize> {
+    conn.execute(
+        "INSERT INTO product_sizes (product_id, size_id, price) VALUES (?1, ?2, ?3)",
+        params![product_id, size_id, price],
+    )
+}
+
+pub fn fetch_products_with_sizes(conn: &Connection) -> Result<Vec<ProductWithSizes>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, category_id, name, barcode FROM products ORDER BY id ASC"
+    )?;
+    let product_iter = stmt.query_map([], |row| {
+        Ok(ProductWithSizes {
+            id: row.get(0)?,
+            category_id: row.get(1)?,
+            name: row.get(2)?,
+            barcode: row.get(3)?,
+            sizes: vec![],
+        })
+    })?;
+
+    let mut products = Vec::new();
+    for product in product_iter {
+        let mut p = product?;
+        p.sizes = fetch_product_sizes(conn, p.id)?;
+        products.push(p);
+    }
+
+    Ok(products)
 }

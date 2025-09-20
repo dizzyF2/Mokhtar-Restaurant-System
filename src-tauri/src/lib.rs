@@ -1,6 +1,7 @@
 mod db;
 mod models;
 
+use rusqlite::params;
 use db::init_db;
 
 use models::admin::{create_admin_table, add_admin, validate_admin, update_admin, verify_admin_password};
@@ -8,12 +9,17 @@ use models::employee::{
     add_employee, get_employees, update_employee, verify_employee, delete_employee, Employee,
 };
 use models::products::{
-    add_product, get_products, update_product, delete_product, Product,
+    add_product, get_products, update_product, delete_product, fetch_products_with_sizes, 
+    add_product_size, Product, ProductWithSizes,
 };
 use models::sale::{start_sale, add_sale_item, update_sale_total, get_all_sales, SaleReport};
 use models::report::{get_report, SalesReport};
 use models::clients::Client;
 use models::categories::{fetch_categories, add_category, update_category, delete_category, Category};
+use models::sizes::{
+    fetch_product_sizes, update_product_size, delete_product_size, ProductSize, SizeInput,
+    fetch_sizes, add_size, update_size, delete_size
+};
 
 
 // ---------------- ADMIN COMMANDS ----------------
@@ -113,21 +119,25 @@ fn add_product_cmd(
     app: tauri::AppHandle,
     category_id: i32,
     name: String,
-    description: Option<String>,
-    base_price: f64,
     barcode: Option<String>,
+    sizes: Vec<SizeInput>,
 ) -> Result<(), String> {
     let conn = init_db(&app).map_err(|e| e.to_string())?;
-    add_product(
+
+    let product_id = add_product(
         &conn,
         category_id,
         &name,
-        description.as_deref(),
-        base_price,
         barcode.as_deref(),
     )
-    .map(|_| ())
-    .map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())?;
+
+    for s in sizes {
+        add_product_size(&conn, product_id, s.size_id, s.price)
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -142,28 +152,38 @@ fn update_product_cmd(
     id: i32,
     category_id: i32,
     name: String,
-    description: Option<String>,
-    base_price: f64,
     barcode: Option<String>,
+    sizes: Vec<SizeInput>,
 ) -> Result<(), String> {
     let conn = init_db(&app).map_err(|e| e.to_string())?;
-    update_product(
-        &conn,
-        id,
-        category_id,
-        &name,
-        description.as_deref(),
-        base_price,
-        barcode.as_deref(),
-    )
-    .map(|_| ())
-    .map_err(|e| e.to_string())
+
+
+    update_product(&conn, id, category_id, &name, barcode.as_deref())
+        .map_err(|e| e.to_string())?;
+
+
+    conn.execute("DELETE FROM product_sizes WHERE product_id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+
+
+    for s in sizes {
+        add_product_size(&conn, id as i64, s.size_id, s.price)
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }
 
 #[tauri::command]
 fn delete_product_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
     let conn = init_db(&app).map_err(|e| e.to_string())?;
     delete_product(&conn, id).map(|_| ()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn get_products_with_sizes_cmd(app: tauri::AppHandle) -> Result<Vec<ProductWithSizes>, String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    fetch_products_with_sizes(&conn).map_err(|e| e.to_string())
 }
 
 
@@ -265,6 +285,51 @@ fn delete_category_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
     delete_category(&conn, id).map_err(|e| e.to_string())
 }
 
+// ---------------- PRODUCT SIZE COMMANDS ----------------
+#[tauri::command]
+fn fetch_product_sizes_cmd(app: tauri::AppHandle, product_id: i32) -> Result<Vec<ProductSize>, String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    fetch_product_sizes(&conn, product_id).map_err(|e| e.to_string())
+}
+
+
+#[tauri::command]
+fn update_product_size_cmd(app: tauri::AppHandle, id: i32, size_id: i32, price: f64) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    update_product_size(&conn, id, size_id, price).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_product_size_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    delete_product_size(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn fetch_sizes_cmd(app: tauri::AppHandle) -> Result<Vec<crate::models::sizes::Size>, String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    fetch_sizes(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn add_size_cmd(app: tauri::AppHandle, name: String) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    add_size(&conn, &name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn update_size_cmd(app: tauri::AppHandle, id: i32, name: String) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    update_size(&conn, id, &name).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_size_cmd(app: tauri::AppHandle, id: i32) -> Result<(), String> {
+    let conn = init_db(&app).map_err(|e| e.to_string())?;
+    delete_size(&conn, id).map_err(|e| e.to_string())
+}
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -289,6 +354,7 @@ pub fn run() {
             get_products_cmd,
             update_product_cmd,
             delete_product_cmd,
+            get_products_with_sizes_cmd,
             // sale
             start_sale_cmd,
             add_sale_item_cmd,
@@ -306,6 +372,14 @@ pub fn run() {
             add_category_cmd,
             update_category_cmd,
             delete_category_cmd,
+            // product sizes
+            fetch_product_sizes_cmd,
+            update_product_size_cmd,
+            delete_product_size_cmd,
+            fetch_sizes_cmd,
+            add_size_cmd,
+            update_size_cmd,
+            delete_size_cmd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

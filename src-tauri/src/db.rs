@@ -33,13 +33,20 @@ pub fn init_db(app: &tauri::AppHandle) -> Result<Connection> {
             FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE SET NULL
         );
 
+        -- Table for size names
+        CREATE TABLE IF NOT EXISTS sizes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE
+        );
+
         -- Product sizes (optional pricing per size)
         CREATE TABLE IF NOT EXISTS product_sizes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id INTEGER NOT NULL,
-            size TEXT NOT NULL, -- e.g. small, medium, large
+            size_id INTEGER NOT NULL,
             price REAL NOT NULL,
-            FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+            FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+            FOREIGN KEY(size_id) REFERENCES sizes(id) ON DELETE CASCADE
         );
 
         -- Employees (cashiers/admins)
