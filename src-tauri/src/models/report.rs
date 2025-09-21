@@ -4,6 +4,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 pub struct SaleDetail {
     pub product_name: String,
+    pub size: Option<String>,
     pub quantity: i32,
     pub employee_name: String,
     pub total_price: f64,
@@ -37,17 +38,19 @@ pub fn get_report(
     )?;
 
     let mut stmt_details = conn.prepare(
-        "SELECT si.product_name,
-                si.quantity,
-                e.name,
-                ((si.price + si.extra_amount) * si.quantity) as total_price,
-                s.timestamp,
-                c.name as category_name
+    "SELECT si.product_name,
+            si.size,
+            si.quantity,
+            e.name,
+            ((si.price + si.extra_amount) * si.quantity) as total_price,
+            s.timestamp,
+            c.name as category_name
             FROM sale_items si
             JOIN sales s ON si.sale_id = s.id
             JOIN employees e ON s.employee_id = e.id
             LEFT JOIN products p ON si.product_id = p.id
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN sizes sz ON si.size_id = sz.id  
             WHERE date(s.timestamp) BETWEEN ?1 AND ?2
             ORDER BY s.timestamp DESC",
     )?;
@@ -55,11 +58,12 @@ pub fn get_report(
     let sales_iter = stmt_details.query_map(params![start, end], |row| {
         Ok(SaleDetail {
             product_name: row.get(0)?,
-            quantity: row.get(1)?,
-            employee_name: row.get(2)?,
-            total_price: row.get(3)?,
-            timestamp: row.get(4)?,
-            category_name: row.get(5).ok(),
+            size: row.get(1)?,
+            quantity: row.get(2)?,
+            employee_name: row.get(3)?,
+            total_price: row.get(4)?,
+            timestamp: row.get(5)?,
+            category_name: row.get(6).ok(),
         })
     })?;
 

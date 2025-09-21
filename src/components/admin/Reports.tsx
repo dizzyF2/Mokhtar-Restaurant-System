@@ -17,6 +17,7 @@ import { BarChart3 } from "lucide-react";
 
 type SaleDetail = {
     product_name: string;
+    size: string;
     quantity: number;
     employee_name: string;
     total_price: number;
@@ -210,43 +211,47 @@ export default function ReportPage() {
                 <ScrollArea className="h-64 w-full rounded-md border border-gray-200">
                 <Table dir="rtl">
                     <TableHeader>
-                    <TableRow className="bg-gray-100 hover:bg-gray-100">
-                        <TableHead className="text-gray-700 font-semibold">
-                        المنتج
-                        </TableHead>
-                        <TableHead className="text-gray-700 font-semibold">
-                        الكمية
-                        </TableHead>
-                        <TableHead className="text-gray-700 font-semibold">
-                        الموظف
-                        </TableHead>
-                        <TableHead className="text-gray-700 font-semibold">
-                        الإجمالي
-                        </TableHead>
-                        <TableHead className="text-gray-700 font-semibold">
-                        التاريخ والوقت
-                        </TableHead>
-                    </TableRow>
+                        <TableRow className="bg-gray-100 hover:bg-gray-100">
+                            <TableHead className="text-right text-gray-700 font-semibold">
+                                المنتج
+                            </TableHead>
+                            <TableHead className="text-right text-gray-700 font-semibold">
+                                الحجم
+                            </TableHead>
+                            <TableHead className="text-right text-gray-700 font-semibold">
+                                الكمية
+                            </TableHead>
+                            <TableHead className="text-right text-gray-700 font-semibold">
+                                الموظف
+                            </TableHead>
+                            <TableHead className="text-right text-gray-700 font-semibold">
+                                الإجمالي
+                            </TableHead>
+                            <TableHead className="text-center text-gray-700 font-semibold">
+                                التاريخ والوقت
+                            </TableHead>
+                        </TableRow>
                     </TableHeader>
                     <TableBody>
                     {sales.length > 0 ? (
                         sales.map((sale, index) => (
                         <TableRow key={index} className="hover:bg-gray-50">
                             <TableCell>{sale.product_name}</TableCell>
+                            <TableCell>{sale.size}</TableCell>
                             <TableCell>{sale.quantity}</TableCell>
                             <TableCell>{sale.employee_name}</TableCell>
                             <TableCell>{sale.total_price} ج.م</TableCell>
-                            <TableCell>{formatCairoDateTime(sale.timestamp)}</TableCell>
+                            <TableCell className="text-center" dir="ltr">{formatCairoDateTime(sale.timestamp)}</TableCell>
                         </TableRow>
                         ))
                     ) : (
                         <TableRow>
-                        <TableCell
-                            colSpan={5}
-                            className="text-center text-gray-500 p-4"
-                        >
-                            لا توجد بيانات متاحة حاليًا
-                        </TableCell>
+                            <TableCell
+                                colSpan={5}
+                                className="text-center text-gray-500 p-4"
+                            >
+                                لا توجد بيانات متاحة حاليًا
+                            </TableCell>
                         </TableRow>
                     )}
                     </TableBody>
