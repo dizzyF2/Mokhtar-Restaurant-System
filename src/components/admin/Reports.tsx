@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import toast from "react-hot-toast";
+import { BarChart3 } from "lucide-react";
 
 type SaleDetail = {
     product_name: string;
@@ -104,12 +105,13 @@ export default function ReportPage() {
     return (
         <div className="p-6 max-w-6xl mx-auto" dir="rtl">
         <Card className="shadow-md border border-gray-200 rounded-xl">
-            <CardContent className="p-6 space-y-6">
-            <CardTitle className="text-2xl font-bold text-gray-800 mb-4">
+            <CardContent className="p-5 space-y-6">
+            <CardTitle className="text-3xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+                <BarChart3 className="text-blue-600" size={32} />
                 تقرير المبيعات
             </CardTitle>
 
-            {/* Preset Filters */}
+
             <div className="flex flex-wrap gap-3">
                 <Button
                 variant="outline"
@@ -134,7 +136,7 @@ export default function ReportPage() {
                 </Button>
             </div>
 
-            {/* Specific Date Filter */}
+
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 عرض التقرير بتاريخ محدد
@@ -162,7 +164,7 @@ export default function ReportPage() {
                 </p>
             </div>
 
-            {/* Date Range */}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                 <label className="block text-sm mb-1 font-medium text-gray-700">
@@ -194,7 +196,7 @@ export default function ReportPage() {
                 </Button>
             </div>
 
-            {/* Summary */}
+
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <p className="text-lg font-semibold text-gray-800">
                 إجمالي المبيعات: {totalSales} ج.م
@@ -204,10 +206,9 @@ export default function ReportPage() {
                 </p>
             </div>
 
-            {/* Table with ScrollArea */}
             <div className="overflow-hidden">
                 <ScrollArea className="h-64 w-full rounded-md border border-gray-200">
-                <Table>
+                <Table dir="rtl">
                     <TableHeader>
                     <TableRow className="bg-gray-100 hover:bg-gray-100">
                         <TableHead className="text-gray-700 font-semibold">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogOut, Package, Users, BarChart3, Settings, Contact, Utensils, Layers } from "lucide-react";
+import { LogOut, Users, BarChart3, Settings, Contact, Utensils, Tag, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProductsPage from "../components/admin/ProductsPage";
@@ -20,8 +20,8 @@ export default function AdminPanel() {
     const navigate = useNavigate();
     const menuItems = [
         { key: "products", label: "قائمة الطعام", icon: Utensils },
-        { key: "categories", label: "الفئات", icon: Package },
-        { key: "Sizes", label: "الاحجام", icon: Layers },
+        { key: "categories", label: "الفئات", icon: Tag },
+        { key: "Sizes", label: "الاحجام", icon: Ruler },
         { key: "employees", label: "الموظفين", icon: Users },
         { key: "clients", label: "العملاء", icon: Contact },
         { key: "reports", label: "التقارير", icon: BarChart3 },
@@ -52,7 +52,6 @@ export default function AdminPanel() {
 
     return (
         <div className="flex h-screen bg-gray-100 overflow-hidden" dir="rtl">
-            {/* Sidebar */}
             <aside className="w-64 bg-gray-800 text-white flex flex-col h-full">
                 <div
                     className="hover:bg-gray-700/30 flex flex-row-reverse justify-center items-center p-5 font-bold text-lg border-b border-gray-700 cursor-pointer"
@@ -96,7 +95,7 @@ export default function AdminPanel() {
                 </div>
             </aside>
 
-            {/* Main content */}
+
             <main className="flex-1 flex flex-col h-full">
                 {!activePage && (
                     <div className="flex flex-col items-center justify-center flex-1 text-center">

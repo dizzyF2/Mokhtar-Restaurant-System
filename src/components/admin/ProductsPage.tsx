@@ -1,160 +1,139 @@
-import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Trash2, Edit3, PlusCircle } from "lucide-react";
-import toast from "react-hot-toast";
-import ConfirmModal from "../ConfirmModal";
-import { ScrollArea } from "../ui/scroll-area";
+import { useEffect, useState } from "react"
+import { invoke } from "@tauri-apps/api/core"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Trash2, Edit3, PlusCircle, X, Plus } from "lucide-react"
+import toast from "react-hot-toast"
+import ConfirmModal from "@/components/ConfirmModal"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 type Size = {
-  id: number;
-  name: string;
-};
+  id: number
+  name: string
+}
 
 type ProductSize = {
-  id: number;
-  product_id: number;
-  size_id: number;
-  size: string;
-  price: number;
-};
+  id: number
+  product_id: number
+  size_id: number
+  size: string
+  price: number
+}
 
 type Product = {
-  id: number;
-  name: string;
-  category_id: number;
-  barcode?: string;
-  sizes: ProductSize[];
-};
+  id: number
+  name: string
+  category_id: number
+  barcode?: string
+  sizes: ProductSize[]
+}
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [sizes, setSizes] = useState<Size[]>([]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    []
-  );
-
-  const [newName, setNewName] = useState("");
-  const [newBarcode, setNewBarcode] = useState("");
-  const [newCategory, setNewCategory] = useState<number | null>(null);
-  const [selectedSizes, setSelectedSizes] = useState<
-    { size_id: number; price: number }[]
-  >([]);
-
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingName, setEditingName] = useState("");
-  const [editingBarcode, setEditingBarcode] = useState("");
-  const [editingCategory, setEditingCategory] = useState<number | null>(null);
-  const [editingSizes, setEditingSizes] = useState<
-    { size_id: number; price: number }[]
-  >([]);
+  const [products, setProducts] = useState<Product[]>([])
+  const [sizes, setSizes] = useState<Size[]>([])
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([])
+  const [newName, setNewName] = useState("")
+  const [newBarcode, setNewBarcode] = useState("")
+  const [newCategory, setNewCategory] = useState<number | null>(null)
+  const [selectedSizes, setSelectedSizes] = useState<{ size_id: number; price: number }[]>([])
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingName, setEditingName] = useState("")
+  const [editingBarcode, setEditingBarcode] = useState("")
+  const [editingCategory, setEditingCategory] = useState<number | null>(null)
+  const [editingSizes, setEditingSizes] = useState<{ size_id: number; price: number }[]>([])
+  const [showSizeDialog, setShowSizeDialog] = useState(false)
+  const [editingSizeDialog, setEditingSizeDialog] = useState(false)
 
   useEffect(() => {
-    fetchProducts();
-    fetchSizes();
-    fetchCategories();
-  }, []);
+    fetchProducts()
+    fetchSizes()
+    fetchCategories()
+  }, [])
 
   const fetchProducts = async () => {
     try {
-      const result = await invoke<Product[]>("get_products_with_sizes_cmd");
-      setProducts(result);
+      const result = await invoke<Product[]>("get_products_with_sizes_cmd")
+      setProducts(result)
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في جلب المنتجات");
+      console.error(e)
+      toast.error("فشل في جلب المنتجات")
     }
-  };
+  }
 
   const fetchSizes = async () => {
     try {
-      const result = await invoke<Size[]>("fetch_sizes_cmd");
-      setSizes(result);
+      const result = await invoke<Size[]>("fetch_sizes_cmd")
+      setSizes(result)
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في جلب الأحجام");
+      console.error(e)
+      toast.error("فشل في جلب الأحجام")
     }
-  };
+  }
 
   const fetchCategories = async () => {
     try {
-      const result = await invoke<{ id: number; name: string }[]>(
-        "fetch_categories_cmd"
-      );
-      setCategories(result);
+      const result = await invoke<{ id: number; name: string }[]>("fetch_categories_cmd")
+      setCategories(result)
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في جلب التصنيفات");
+      console.error(e)
+      toast.error("فشل في جلب الفئات")
     }
-  };
+  }
 
   const addProduct = async () => {
-    if (!newName.trim()) return toast.error("يرجى إدخال اسم المنتج");
-    if (!newCategory) return toast.error("يرجى اختيار تصنيف");
-    if (!selectedSizes.length)
-      return toast.error("يرجى اختيار حجم واحد على الأقل");
+    if (!newName.trim()) return toast.error("يرجى إدخال اسم المنتج")
+    if (!newCategory) return toast.error("يرجى اختيار تصنيف")
+    if (!selectedSizes.length) return toast.error("يرجى اختيار حجم واحد على الأقل")
 
     try {
       await invoke("add_product_cmd", {
         name: newName.trim(),
         categoryId: newCategory,
         barcode: newBarcode.trim() || null,
-        sizes: selectedSizes, // pass sizes here
-      });
-      setNewName("");
-      setNewBarcode("");
-      setNewCategory(null);
-      setSelectedSizes([]);
-      await fetchProducts();
-      toast.success("تمت إضافة المنتج بنجاح");
+        sizes: selectedSizes,
+      })
+      await fetchProducts()
+      setNewName("")
+      setNewBarcode("")
+      setNewCategory(null)
+      setSelectedSizes([])
+      toast.success("تمت إضافة المنتج بنجاح")
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في إضافة المنتج");
+      console.error(e)
+      toast.error("فشل في إضافة المنتج")
     }
-  };
+  }
 
   const startEdit = (p: Product) => {
-    setEditingId(p.id);
-    setEditingName(p.name);
-    setEditingBarcode(p.barcode || "");
-    setEditingCategory(p.category_id);
+    setEditingId(p.id)
+    setEditingName(p.name)
+    setEditingBarcode(p.barcode || "")
+    setEditingCategory(p.category_id)
     setEditingSizes(
       p.sizes.map((s) => ({
         size_id: s.size_id,
         price: s.price,
-      }))
-    );
-  };
+      })),
+    )
+  }
 
   const cancelEdit = () => {
-    setEditingId(null);
-    setEditingName("");
-    setEditingBarcode("");
-    setEditingCategory(null);
-    setEditingSizes([]);
-  };
+    setEditingId(null)
+    setEditingName("")
+    setEditingBarcode("")
+    setEditingCategory(null)
+    setEditingSizes([])
+  }
 
   const saveEdit = async () => {
-    if (!editingName.trim()) return toast.error("يرجى إدخال اسم المنتج");
-    if (!editingCategory) return toast.error("يرجى اختيار تصنيف");
-    if (!editingSizes.length)
-      return toast.error("يرجى تحديد سعر لحجم واحد على الأقل");
+    if (!editingName.trim()) return toast.error("يرجى إدخال اسم المنتج")
+    if (!editingCategory) return toast.error("يرجى اختيار تصنيف")
+    if (!editingSizes.length) return toast.error("يرجى تحديد سعر لحجم واحد على الأقل")
 
     try {
       await invoke("update_product_cmd", {
@@ -163,27 +142,114 @@ export default function ProductsPage() {
         name: editingName.trim(),
         barcode: editingBarcode.trim() || null,
         sizes: editingSizes,
-      });
-
-      cancelEdit();
-      await fetchProducts();
-      toast.success("تم تعديل المنتج بنجاح");
+      })
+      await fetchProducts()
+      cancelEdit()
+      toast.success("تم تعديل المنتج بنجاح")
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في تعديل المنتج");
+      console.error(e)
+      toast.error("فشل في تعديل المنتج")
     }
-  };
+  }
 
   const removeProduct = async (id: number) => {
     try {
-      await invoke("delete_product_cmd", { id });
-      await fetchProducts();
-      toast.success("تم حذف المنتج");
+      await invoke("delete_product_cmd", { id })
+      await fetchProducts()
+      toast.success("تم حذف المنتج")
     } catch (e) {
-      console.error(e);
-      toast.error("فشل في حذف المنتج");
+      console.error(e)
+      toast.error("فشل في حذف المنتج")
     }
-  };
+  }
+
+  const SizeManager = ({
+    sizes: availableSizes,
+    selectedSizes,
+    onSizesChange,
+    // isEditing = false,
+  }: {
+    sizes: Size[]
+    selectedSizes: { size_id: number; price: number }[]
+    onSizesChange: (sizes: { size_id: number; price: number }[]) => void
+    isEditing?: boolean
+  }) => {
+    const addSize = (sizeId: number) => {
+      if (!selectedSizes.find((s) => s.size_id === sizeId)) {
+        onSizesChange([...selectedSizes, { size_id: sizeId, price: 0 }])
+      }
+    }
+
+    const removeSize = (sizeId: number) => {
+      onSizesChange(selectedSizes.filter((s) => s.size_id !== sizeId))
+    }
+
+    const updatePrice = (sizeId: number, price: number) => {
+      onSizesChange(selectedSizes.map((s) => (s.size_id === sizeId ? { ...s, price } : s)))
+    }
+
+    const availableToAdd = availableSizes.filter((size) => !selectedSizes.find((s) => s.size_id === size.id))
+
+    return (
+      <div className="space-y-4">
+        <div className="space-y-3">
+          {selectedSizes.map((selectedSize) => {
+            const size = availableSizes.find((s) => s.id === selectedSize.size_id)
+            return (
+              <div key={selectedSize.size_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                <Badge variant="secondary" className="min-w-[80px] justify-center">
+                  {size?.name}
+                </Badge>
+                <Input
+                  type="number"
+                  value={selectedSize.price}
+                  onChange={(e) => updatePrice(selectedSize.size_id, Number.parseFloat(e.target.value) || 0)}
+                  placeholder="السعر"
+                  className="w-32"
+                />
+                <span className="text-sm text-gray-600">ج.م</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeSize(selectedSize.size_id)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )
+          })}
+        </div>
+
+        {availableToAdd.length > 0 && (
+          <div className="border-t pt-4">
+            <p className="text-sm font-medium text-gray-700 mb-3">إضافة حجم جديد:</p>
+            <div className="flex flex-wrap gap-2">
+              {availableToAdd.map((size) => (
+                <Button
+                  key={size.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addSize(size.id)}
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                >
+                  <Plus className="w-4 h-4 ml-1" />
+                  {size.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedSizes.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>لم يتم اختيار أي أحجام بعد</p>
+            <p className="text-sm">اختر الأحجام المتاحة أدناه</p>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 max-w-6xl mx-auto" dir="rtl">
@@ -192,17 +258,10 @@ export default function ProductsPage() {
           <CardTitle className="text-2xl font-bold">إضافة منتج جديد</CardTitle>
 
           <div className="flex flex-col md:flex-row gap-3">
-            <Input
-              placeholder="اسم المنتج"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-            <Select
-              value={newCategory?.toString()}
-              onValueChange={(val) => setNewCategory(Number(val))}
-            >
+            <Input placeholder="اسم المنتج" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <Select value={newCategory?.toString()} onValueChange={(val) => setNewCategory(Number(val))}>
               <SelectTrigger>
-                <SelectValue placeholder="اختر التصنيف" />
+                <SelectValue placeholder="اختر الفئة" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((c) => (
@@ -212,84 +271,64 @@ export default function ProductsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              placeholder="باركود (اختياري)"
-              value={newBarcode}
-              onChange={(e) => setNewBarcode(e.target.value)}
-            />
+            <Input placeholder="باركود (اختياري)" value={newBarcode} onChange={(e) => setNewBarcode(e.target.value)} />
           </div>
 
-          {/* Sizes */}
-          <div>
-            <p className="mb-1 font-medium">الأحجام</p>
-            {sizes.map((s) => {
-              const selected = selectedSizes.find((sz) => sz.size_id === s.id);
-              return (
-                <div key={s.id} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="checkbox"
-                    checked={!!selected}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedSizes([
-                          ...selectedSizes,
-                          { size_id: s.id, price: 0 },
-                        ]);
-                      } else {
-                        setSelectedSizes(
-                          selectedSizes.filter((sz) => sz.size_id !== s.id)
-                        );
-                      }
-                    }}
-                  />
-                  <span className="w-20">{s.name}</span>
-                  {selected && (
-                    <Input
-                      type="number"
-                      value={selected.price}
-                      onChange={(e) => {
-                        const price = parseFloat(e.target.value) || 0;
-                        setSelectedSizes(
-                          selectedSizes.map((sz) =>
-                            sz.size_id === s.id ? { ...sz, price } : sz
-                          )
-                        );
-                      }}
-                      placeholder="السعر"
-                      className="w-24"
-                    />
-                  )}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="font-medium">الأحجام والأسعار</p>
+              <Dialog open={showSizeDialog} onOpenChange={setShowSizeDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 bg-transparent">
+                    <Plus className="w-4 h-4 ml-1" />
+                    إدارة الأحجام
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md" dir="rtl">
+                  <DialogHeader>
+                    <DialogTitle>إدارة أحجام المنتج</DialogTitle>
+                  </DialogHeader>
+                  <SizeManager sizes={sizes} selectedSizes={selectedSizes} onSizesChange={setSelectedSizes} />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="min-h-[60px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              {selectedSizes.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedSizes.map((selectedSize) => {
+                    const size = sizes.find((s) => s.id === selectedSize.size_id)
+                    return (
+                      <Badge key={selectedSize.size_id} variant="secondary" className="text-sm flex items-center gap-1.5">
+                        <p>{size?.name}:</p>
+                        <p>{selectedSize.price} ج.م</p>
+                      </Badge>
+                    )
+                  })}
                 </div>
-              );
-            })}
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                  انقر على "إدارة الأحجام" لإضافة الأحجام والأسعار
+                </div>
+              )}
+            </div>
           </div>
 
-          <Button
-            onClick={addProduct}
-            className="bg-blue-600 text-white flex items-center gap-2 px-4 py-2 rounded"
-          >
+          <Button onClick={addProduct} className="bg-green-600 text-white flex items-center gap-2 px-4 py-2 rounded">
             <PlusCircle size={18} /> إضافة
           </Button>
         </CardContent>
       </Card>
 
-      {/* Products Table */}
+
       <ScrollArea className="h-64 w-full rounded-md border border-gray-200" dir="rtl">
         <Table className="border border-gray-200 rounded-lg">
           <TableHeader>
             <TableRow className="bg-gray-100 hover:bg-gray-100">
-              <TableHead className="text-right text-gray-700 font-semibold">
-                المنتج
-              </TableHead>
-              <TableHead className="text-right text-gray-700 font-semibold">
-                التصنيف
-              </TableHead>
-              <TableHead className="text-right text-gray-700 font-semibold">
-                الأحجام
-              </TableHead>
-              <TableHead className="pl-7 text-gray-700 font-semibold pr-10">
-                الإجراءات
-              </TableHead>
+              <TableHead className="text-right text-gray-700 font-semibold">المنتج</TableHead>
+              <TableHead className="text-right text-gray-700 font-semibold">الفئة</TableHead>
+              <TableHead className="text-right text-gray-700 font-semibold">الأحجام</TableHead>
+              <TableHead className="pl-7 text-gray-700 font-semibold pr-10">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -314,7 +353,7 @@ export default function ProductsPage() {
                       onValueChange={(val) => setEditingCategory(Number(val))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر التصنيف" />
+                        <SelectValue placeholder="اختر الفئة" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((c) => (
@@ -326,68 +365,44 @@ export default function ProductsPage() {
                     </Select>
                   ) : (
                     <span className="font-medium text-gray-600">
-                      {categories.find((c) => c.id === p.category_id)?.name ||
-                        "-"}
+                      {categories.find((c) => c.id === p.category_id)?.name || "-"}
                     </span>
                   )}
                 </TableCell>
 
                 <TableCell>
                   {editingId === p.id ? (
-                    <div className="flex flex-col gap-2">
-                      {sizes.map((s) => {
-                        const sizeEdit = editingSizes.find(
-                          (sz) => sz.size_id === s.id
-                        );
-                        return (
-                          <div key={s.id} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={!!sizeEdit}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setEditingSizes([
-                                    ...editingSizes,
-                                    { size_id: s.id, price: 0 },
-                                  ]);
-                                } else {
-                                  setEditingSizes(
-                                    editingSizes.filter(
-                                      (sz) => sz.size_id !== s.id
-                                    )
-                                  );
-                                }
-                              }}
-                            />
-                            <span className="w-20">{s.name}</span>
-                            {sizeEdit && (
-                              <Input
-                                type="number"
-                                value={sizeEdit.price}
-                                onChange={(e) => {
-                                  const price =
-                                    parseFloat(e.target.value) || 0;
-                                  setEditingSizes(
-                                    editingSizes.map((sz) =>
-                                      sz.size_id === s.id
-                                        ? { ...sz, price }
-                                        : sz
-                                    )
-                                  );
-                                }}
-                                className="w-24"
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
+                    <div className="flex items-center gap-2">
+                      <Dialog open={editingSizeDialog} onOpenChange={setEditingSizeDialog}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 bg-transparent">
+                            <Edit3 className="w-4 h-4 ml-1" />
+                            تعديل الأحجام
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md" dir="rtl">
+                          <DialogHeader>
+                            <DialogTitle>تعديل أحجام المنتج</DialogTitle>
+                          </DialogHeader>
+                          <SizeManager
+                            sizes={sizes}
+                            selectedSizes={editingSizes}
+                            onSizesChange={setEditingSizes}
+                            isEditing={true}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                      <div className="text-sm text-gray-600">({editingSizes.length} حجم محدد)</div>
                     </div>
                   ) : (
-                    <span>
-                      {p.sizes
-                        .map((s) => `${s.size}: ${s.price} ج.م`)
-                        .join(", ")}
-                    </span>
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {p.sizes.map((s, index) => (
+                        <Badge key={index} variant="outline" className="text-xs flex items-center gap-1.5">
+                          <p>{s.size}:</p>
+                          <p>{s.price} ج.م</p>
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                 </TableCell>
 
@@ -405,7 +420,7 @@ export default function ProductsPage() {
                         size="sm"
                         variant="outline"
                         onClick={cancelEdit}
-                        className="flex items-center gap-1 px-3 rounded"
+                        className="flex items-center gap-1 px-3 rounded bg-transparent"
                       >
                         إلغاء
                       </Button>
@@ -421,10 +436,7 @@ export default function ProductsPage() {
                       </Button>
                       <ConfirmModal
                         trigger={
-                          <Button
-                            variant="destructive"
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 rounded"
-                          >
+                          <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white px-3 rounded">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         }
@@ -441,10 +453,7 @@ export default function ProductsPage() {
 
             {products.length === 0 && (
               <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center text-gray-500 p-4"
-                >
+                <TableCell colSpan={4} className="text-center text-gray-500 p-4">
                   لا يوجد منتجات.
                 </TableCell>
               </TableRow>
@@ -453,5 +462,5 @@ export default function ProductsPage() {
         </Table>
       </ScrollArea>
     </div>
-  );
+  )
 }
