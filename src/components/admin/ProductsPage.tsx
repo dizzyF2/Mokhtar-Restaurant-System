@@ -11,18 +11,11 @@ import ConfirmModal from "@/components/ConfirmModal"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ProductSize } from "@/types"
 
 type Size = {
   id: number
   name: string
-}
-
-type ProductSize = {
-  id: number
-  product_id: number
-  size_id: number
-  size: string
-  price: number
 }
 
 type Product = {
@@ -185,7 +178,12 @@ export default function ProductsPage() {
     }
 
     const updatePrice = (sizeId: number, price: number) => {
-      onSizesChange(selectedSizes.map((s) => (s.size_id === sizeId ? { ...s, price } : s)))
+      const safePrice = price < 0 ? 0 : price
+      onSizesChange(
+        selectedSizes.map((s) =>
+          s.size_id === sizeId ? { ...s, price: safePrice } : s
+        )
+      )
     }
 
     const availableToAdd = availableSizes.filter((size) => !selectedSizes.find((s) => s.size_id === size.id))
@@ -203,7 +201,10 @@ export default function ProductsPage() {
                 <Input
                   type="number"
                   value={selectedSize.price}
-                  onChange={(e) => updatePrice(selectedSize.size_id, Number.parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value) || 0
+                    updatePrice(selectedSize.size_id, value < 0 ? 0 : value)
+                  }}
                   placeholder="السعر"
                   className="w-32"
                 />
