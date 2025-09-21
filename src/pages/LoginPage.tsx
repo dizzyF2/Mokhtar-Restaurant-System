@@ -98,7 +98,7 @@ export default function LoginPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 mb-4">
                 <Building2 className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">نظام إدارة الأعمال</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-2">مطعم مختار</h1>
             <p className="text-muted-foreground">مرحباً بك، يرجى تسجيل الدخول للمتابعة</p>
             </div>
 

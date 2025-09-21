@@ -189,9 +189,14 @@ fn get_products_with_sizes_cmd(app: tauri::AppHandle) -> Result<Vec<ProductWithS
 
 // ---------------- SALE COMMANDS ----------------
 #[tauri::command]
-fn start_sale_cmd(app: tauri::AppHandle, employee_id: i32) -> Result<i64, String> {
+fn start_sale_cmd(
+    app: tauri::AppHandle,
+    employee_id: i32,
+    client_id: Option<i32>,
+    order_type: String
+) -> Result<i64, String> {
     let conn = init_db(&app).map_err(|e| e.to_string())?;
-    start_sale(&conn, employee_id).map_err(|e| e.to_string())
+    start_sale(&conn, employee_id, client_id, &order_type).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -199,12 +204,13 @@ fn add_sale_item_cmd(
     app: tauri::AppHandle,
     sale_id: i64,
     product_id: i32,
+    size_id: i32,
     quantity: i32,
-    price: f64,  
-    extra_amount: f64 
+    price: f64,
+    extra_amount: f64,
 ) -> Result<(), String> {
     let conn = init_db(&app).map_err(|e| e.to_string())?;
-    add_sale_item(&conn, sale_id, product_id, quantity, price, extra_amount)
+    add_sale_item(&conn, sale_id, product_id, size_id, quantity, price, extra_amount)
         .map_err(|e| e.to_string())
 }
 
