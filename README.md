@@ -1,8 +1,49 @@
-# Tauri + React + Typescript
+# Restaurant Point-Of-Sale System
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+A cross-platform Point-of-Sale (POS) desktop application built with **Tauri**, **Rust**, **React.js**, **TypeScript**, and **SQLite3**.  
+This system is designed for small restaurants to manage daily operations such as sales, products, sizes, categories, employees, and reporting.
 
-## Recommended IDE Setup
+---
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-# Mokhtar-Restaurant-System
+## ✨ Features
+
+- 📦 **Product & Category Management** – Add, edit, and organize menu items with sizes and prices.  
+- 👨‍🍳 **Employee Management** – Track sales by employee for accountability.  
+- 🛒 **Sales Tracking** – Fast and reliable POS workflow for restaurant orders.  
+- 📊 **Reports** – View total sales, transactions, and detailed sales reports (including product sizes and categories).  
+- 🔒 **Secure Auth & Access Control** – Ensure safe usage for admins and employees.  
+- ⚡ **Cross-Platform** – Lightweight desktop app powered by Tauri.
+
+---
+
+## 🛠️ Technologies Used
+
+- **Tauri** – For building secure and lightweight cross-platform apps.  
+- **Rust** – Backend logic and database queries.  
+- **React.js + TypeScript** – Frontend for a smooth UI/UX.  
+- **SQLite3** – Local database for fast and reliable storage.  
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+ recommended)  
+- [Rust](https://www.rust-lang.org/tools/install) (latest stable)  
+- [SQLite3](https://www.sqlite.org/download.html)  
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/dizzyF2/Mokhtar-Restaurant-System.git
+cd Mokhtar-Restaurant-System
+
+# Install dependencies
+npm install
+
+# Run in development
+npm run tauri dev
+
+# Build for production
+npm run tauri build
