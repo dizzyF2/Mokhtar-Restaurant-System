@@ -16,6 +16,21 @@ This system is designed for small restaurants to manage daily operations such as
 
 ---
 
+## 📸 Screenshots
+
+<div style="display: flex; overflow-x: auto; gap: 10px;">
+  <img src="/public/assets/images/login-page.png" alt="Login" width="400" />
+  <img src="/public/assets/images/pos-page.png" alt="POS Screen" width="400" />
+  <img src="/public/assets/images/admin-panel.png" alt="Dashboard" width="400" />
+  <img src="/public/assets/images/products.png" alt="products" width="400" />
+  <img src="/public/assets/images/categories.png" alt="Categories" width="400" />
+  <img src="/public/assets/images/sizes.png" alt="Sizes" width="400" />
+  <img src="/public/assets/images/employees.png" alt="Employees" width="400" />
+  <img src="/public/assets/images/reports.png" alt="Reports" width="400" />
+</div>
+
+---
+
 ## 🛠️ Technologies Used
 
 - **Tauri** – For building secure and lightweight cross-platform apps.  
